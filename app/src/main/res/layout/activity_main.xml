@@ -12,8 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:hint="Enter Name" />
+        android:hint="Enter Name"
+        android:inputType="textPersonName" />
 
     <EditText
         android:id="@+id/etLocation"
@@ -28,5 +28,25 @@
         android:id="@+id/btSave"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save to SQLiteDB" />
+        android:text="Save to SQLiteDB"
+        android:background="@drawable/bttn"
+        android:layout_margin="8dp"/>
+
+    <Button
+        android:id="@+id/btRead"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get Data"
+        android:background="@drawable/bttn"
+        android:layout_margin="8dp"/>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        tools:listitem="@layout/item_row"/>
+
+
 </LinearLayout>
