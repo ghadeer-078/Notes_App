@@ -8,50 +8,66 @@ import android.database.sqlite.SQLiteOpenHelper
 import com.example.notes_app.Model.Person
 
 
-class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "details.db", null, 2) {
+class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, "details.db", null, 3) {
     private val sqLiteDatabase: SQLiteDatabase = writableDatabase
 
     override fun onCreate(db: SQLiteDatabase?) {
-        db?.execSQL("create table students (pk INTEGER PRIMARY KEY AUTOINCREMENT,Name Text, Location Text)")
+        db?.execSQL("create table Note (pk INTEGER PRIMARY KEY AUTOINCREMENT,Title Text, Content Text)")
 
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, p1: Int, p2: Int) {
-        db!!.execSQL("DROP TABLE IF EXISTS students")
+        db!!.execSQL("DROP TABLE IF EXISTS Note")
         onCreate(db)
     }
 
 
     //...
-    fun saveData(name: String, location: String) {
+    fun saveData(title: String, content: String) {
         val contentValues = ContentValues()
-        contentValues.put("Name", name)
-        contentValues.put("Location", location)
 
-        sqLiteDatabase.insert("students", null, contentValues)
+        contentValues.put("Title", title)
+        contentValues.put("Content", content)
+
+        sqLiteDatabase.insert("Note", null, contentValues)
     }
 
 
     //...
-    fun readData(): ArrayList<Person>{
-        val people = arrayListOf<Person>()
+    fun readData(): ArrayList<Person> {
+        val notes = arrayListOf<Person>()
 
-        val cursor: Cursor = sqLiteDatabase.rawQuery("SELECT * FROM students", null)
-        if (cursor.count < 1){
+        val cursor: Cursor = sqLiteDatabase.rawQuery("SELECT * FROM Note", null)
+        if (cursor.count < 1) {
             println("No data found!")
-        }else{
-            while (cursor.moveToNext()){
+        } else {
+            while (cursor.moveToNext()) {
                 val pk = cursor.getInt(0)
-                val name = cursor.getString(1)
-                val location = cursor.getString(2)
+                val title = cursor.getString(1)
+                val content = cursor.getString(2)
 
-                people.add(Person(pk, name, location))
+                notes.add(Person(pk, title, content))
             }
         }
 
-        return people
+        return notes
     }
 
 
+    //...
+    fun updateData(person: Person) {
+        val contentValues = ContentValues()
+
+        contentValues.put("Title", person.title)
+        contentValues.put("Content", person.content)
+
+        sqLiteDatabase.update("Note", contentValues, "pk = ${person.pk}", null)
+    }
+
+    //...
+    fun deleteData(noteID: Int) {
+        sqLiteDatabase.delete("Note", "pk = ?", arrayOf(noteID.toString()))
+
+    }
 
 }
