@@ -97,27 +97,41 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun raiseDialog(id: Int) {
+        var bodyOfDialog = LinearLayout(this)
+
         val dialogBuilder = AlertDialog.Builder(this)
 
         val updatedTitle = EditText(this)
-        //updatedTitle.setText()
-
         val updatedContent = EditText(this)
+
+        updatedTitle.hint = "Enter new Title..."
         updatedContent.hint = "Enter new Text..."
 
         dialogBuilder
             .setCancelable(false)
             .setPositiveButton("Save", DialogInterface.OnClickListener { _, _ ->
-                editNote(id, updatedTitle.text.toString(), updatedContent.text.toString())
+                if (updatedTitle.text.isNotEmpty() && updatedContent.text.isNotEmpty()) {
+                    editNote(
+                        id,
+                        updatedTitle.text.toString(),
+                        updatedContent.text.toString()
+                    )
+                } else {
+                    Toast.makeText(this, "Please Enter Something!", Toast.LENGTH_LONG).show()
+                }
             })
             .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, _ ->
                 dialog.cancel()
             })
+
         val alert = dialogBuilder.create()
         alert.setTitle("Update Note")
-        alert.setView(updatedTitle)
-        alert.setView(updatedContent)
 
+        bodyOfDialog.orientation
+        bodyOfDialog.addView(updatedTitle)
+        bodyOfDialog.addView(updatedContent)
+
+        alert.setView(bodyOfDialog)
         alert.show()
     }
 
