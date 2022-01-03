@@ -5,29 +5,36 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.notes_app.DB.DatabaseHelper
-import com.example.notes_app.Model.Person
+import com.example.notes_app.Model.Note
 import com.example.notes_app.Resource.RVAdapter
+import com.example.notes_app.ViewModel.MainViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import java.lang.Exception
+import com.google.firebase.Timestamp
+
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var llMain: LinearLayout
-    private lateinit var etTitle: EditText
+
+    // private lateinit var etTitle: EditText
     private lateinit var etContent: EditText
     private lateinit var btSave: FloatingActionButton
 
     private lateinit var rvMain: RecyclerView
-    private lateinit var rvAdapter: RVAdapter
 
-    val databaseHelper by lazy { DatabaseHelper(applicationContext) }
-    private lateinit var notes: ArrayList<Person>
+    //Firebase...
+    private val mainViewModel by lazy { ViewModelProvider(this).get(MainViewModel::class.java) }
+
+    ///local database...
+//    val databaseHelper by lazy { DatabaseHelper(applicationContext) }
+    private lateinit var notes: ArrayList<Note>
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,14 +42,32 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         connectView()
-        readData()
+//        readData()
+
+        mainViewModel.getNotes().observe(this) {
+            updtRC(it)
+        }
+        mainViewModel.getData()
+
 
         btSave.setOnClickListener {
-            val title = etTitle.text.toString()
+            // val title = etTitle.text.toString()
             val content = etContent.text.toString()
 
             if (title.isNotEmpty() && content.isNotEmpty()) {
-                databaseHelper.saveData(title, content)
+
+                mainViewModel.addNote(
+                    Note(
+                        "",
+                        // etTitle.text.toString(),
+                        etContent.text.toString()
+                        // Timestamp.now()
+                    )
+                )
+
+//                ///local database...
+//                databaseHelper.saveData(title, content)
+
                 //Toast.makeText(this, "Save Successes", Toast.LENGTH_LONG).show()
                 Snackbar.make(llMain, "Save Successes", Snackbar.LENGTH_LONG).show()
             } else {
@@ -51,71 +76,75 @@ class MainActivity : AppCompatActivity() {
             }
 
             clearText()
-            readData()
+            //readData()
         }
 
-        loadRV()
+        //loadRV()
     }
 
     private fun connectView() {
         llMain = findViewById(R.id.llMain)
-        etTitle = findViewById(R.id.etTitle)
+        //etTitle = findViewById(R.id.etTitle)
         etContent = findViewById(R.id.etContent)
         btSave = findViewById(R.id.btSave)
         rvMain = findViewById(R.id.rvMain)
         notes = arrayListOf()
     }
 
-    fun readData() {
-        notes = databaseHelper.readData()
-        loadRV()
-    }
 
-    fun loadRV() {
-        rvAdapter = RVAdapter(notes, this)
-        rvMain.adapter = rvAdapter
+    fun updtRC(lsNote: List<Note>) {
+        rvMain.adapter = RVAdapter(lsNote, this)
         rvMain.layoutManager = LinearLayoutManager(this)
     }
 
-
-    private fun editNote(noteID: Int, noteTitle: String, noteContent: String) {
-        databaseHelper.updateData(Person(noteID, noteTitle, noteContent))
-        readData()
-    }
-
-
-    fun clearText() {
-        etTitle.text.clear()
+    private fun clearText() {
+        //   etTitle.text.clear()
         etContent.text.clear()
-        etTitle.clearFocus()
+        //   etTitle.clearFocus()
         etContent.clearFocus()
     }
 
-    fun delete(pk: Int) {
-        databaseHelper.deleteData(pk)
-        readData()
+//    ///local database...
+//    private fun readData() {
+//        notes = databaseHelper.readData()
+//        loadRV()
+//    }
+//    //local database...
+//    private fun loadRV() {
+//        rvAdapter = RVAdapter(notes, this)
+//        rvMain.adapter = rvAdapter
+//        rvMain.layoutManager = LinearLayoutManager(this)
+//    }
+//    private fun editNote(noteID: Int, noteTitle: String, noteContent: String) {
+//        ///local Database...
+//        databaseHelper.updateData(Note(noteID, noteTitle, noteContent))
+//        readData()
+//    }
+
+
+    fun delete(note: Note) {
+        mainViewModel.deleteNote(note.id)
+//        ///local database...
+//        databaseHelper.deleteData(pk)
+//        readData()
     }
 
-    fun raiseDialog(id: Int) {
-        var bodyOfDialog = LinearLayout(this)
-
+    fun raiseDialog(note: Note) {
+        //var bodyOfDialog = LinearLayout(this)
         val dialogBuilder = AlertDialog.Builder(this)
 
-        val updatedTitle = EditText(this)
+        //val updatedTitle = EditText(this)
         val updatedContent = EditText(this)
-
-        updatedTitle.hint = "Enter new Title..."
+        // updatedTitle.hint = "Enter new Title..."
         updatedContent.hint = "Enter new Text..."
 
         dialogBuilder
             .setCancelable(false)
             .setPositiveButton("Save", DialogInterface.OnClickListener { _, _ ->
-                if (updatedTitle.text.isNotEmpty() && updatedContent.text.isNotEmpty()) {
-                    editNote(
-                        id,
-                        updatedTitle.text.toString(),
-                        updatedContent.text.toString()
-                    )
+                //updatedTitle.text.isNotEmpty() &&
+                if (updatedContent.text.isNotEmpty()) {
+                    mainViewModel.updateNote(note.id, updatedContent.text.toString())
+
                 } else {
                     Toast.makeText(this, "Please Enter Something!", Toast.LENGTH_LONG).show()
                 }
@@ -127,11 +156,11 @@ class MainActivity : AppCompatActivity() {
         val alert = dialogBuilder.create()
         alert.setTitle("Update Note")
 
-        bodyOfDialog.orientation
-        bodyOfDialog.addView(updatedTitle)
-        bodyOfDialog.addView(updatedContent)
+        // bodyOfDialog.orientation
+        //bodyOfDialog.addView(updatedTitle)
+        //bodyOfDialog.addView(updatedContent)
 
-        alert.setView(bodyOfDialog)
+        alert.setView(updatedContent)
         alert.show()
     }
 

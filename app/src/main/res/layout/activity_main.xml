@@ -8,14 +8,6 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <EditText
-        android:id="@+id/etTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Title Name"
-        android:inputType="textPersonName"
-        android:textStyle="bold" />
 
     <EditText
         android:id="@+id/etContent"
